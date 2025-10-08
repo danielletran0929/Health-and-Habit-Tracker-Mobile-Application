@@ -1,22 +1,52 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProgressCircle } from 'react-native-svg-charts';
-import HomeScreenStyles from './styles/HomeScreenStyles';
+import HomeScreenStyles from '../styles/HomeScreenStyles';
 
-function HomeScreen() {
+export default function HomeScreen({ navigation }) {
+  const [loggedInUser, setLoggedInUser] = useState(null);
   const insets = useSafeAreaInsets();
 
   const stepProgress = 0.45; // 45%
   const sleepProgress = 0.75; // 75%
+
+  // ✅ Check if there's a logged in user when the screen loads
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userData = await AsyncStorage.getItem('loggedInUser');
+      if (userData) {
+        setLoggedInUser(JSON.parse(userData));
+      } else {
+        setLoggedInUser(null);
+      }
+    };
+
+    const unsubscribe = navigation.addListener('focus', fetchUser);
+    fetchUser(); // initial check
+
+    return unsubscribe;
+  }, [navigation]);
+
+  // ✅ Handle button press
+  const handleProfilePress = () => {
+    if (loggedInUser) {
+      navigation.navigate('Profile');
+    } else {
+      navigation.navigate('Login');
+    }
+  };
 
   return (
     <SafeAreaView style={HomeScreenStyles.safeArea}>
       {/* Header */}
       <View style={HomeScreenStyles.header}>
         <Text style={HomeScreenStyles.appName}>Furica</Text>
-        <TouchableOpacity>
-          <Text style={HomeScreenStyles.profileLink}>Profile</Text>
+        <TouchableOpacity onPress={handleProfilePress}>
+          <Text style={HomeScreenStyles.profileLink}>
+            {loggedInUser ? 'Profile' : 'Login / Register'}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -69,22 +99,20 @@ function HomeScreen() {
           {/* Weekly Highlight */}
           <View style={HomeScreenStyles.box}>
             <Text style={HomeScreenStyles.sectionTitle}>Weekly Highlight 🌟</Text>
-            <Text style={HomeScreenStyles.text}>
-              0% exercises this week, perfection
-            </Text>
+            <Text style={HomeScreenStyles.text}>0 exercises this week, perfection</Text>
           </View>
-          
-          {/* Next Alarm */} 
-          <View style={HomeScreenStyles.box}> 
-            <Text style={HomeScreenStyles.sectionTitle}>Next Alarm</Text> 
-            <Text style={HomeScreenStyles.text}>3:00 AM</Text> 
+
+          {/* Next Alarm */}
+          <View style={HomeScreenStyles.box}>
+            <Text style={HomeScreenStyles.sectionTitle}>Next Alarm</Text>
+            <Text style={HomeScreenStyles.text}>3:00 AM</Text>
           </View>
 
           {/* Motivation */}
           <View style={HomeScreenStyles.box}>
             <Text style={HomeScreenStyles.sectionTitle}>Motivation 💪</Text>
             <Text style={HomeScreenStyles.text}>
-              :CAN DO IT FOR THE SHAWTIES LIL BRO"
+              "CAN DO IT FOR THE SHAWTIES LIL BRO"
             </Text>
           </View>
 
@@ -110,13 +138,5 @@ function HomeScreen() {
         <Text style={HomeScreenStyles.navText}>📈</Text>
       </View>
     </SafeAreaView>
-  );
-}
-
-export default function WrappedHomeScreen() {
-  return (
-    <SafeAreaProvider>
-      <HomeScreen />
-    </SafeAreaProvider>
   );
 }
