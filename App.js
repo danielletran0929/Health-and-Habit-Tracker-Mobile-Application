@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import {View, Text, StyleSheet, FlatList, Switch, TouchableOpacity, Alert, Platform} from 'react-native';
+import { View, Text, StyleSheet, FlatList, Switch, TouchableOpacity, Alert, Platform, ScrollView}from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as Notifications from 'expo-notifications';
+import SleepAlarmStyles from './SleepAlarmStyles/SleepAlarmStyles';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -16,6 +17,9 @@ export default function App() {
   const [selectedHour, setSelectedHour] = useState(12);
   const [selectedMinute, setSelectedMinute] = useState(0);
   const [selectedPeriod, setSelectedPeriod] = useState('AM');
+  const [doNotDisturb, setDoNotDisturb] = useState(false);
+
+  const [dndEndTime, setDndEndTime] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -94,13 +98,40 @@ export default function App() {
     setAlarms((prev) => prev.filter((a) => a.id !== id));
   };
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+
+      const matchingAlarm = alarms.find((a) => {
+        const alarmHour24 = convertTo24Hour(a.hour, a.period);
+        return a.active && alarmHour24 === currentHour && a.minute === currentMinute;
+      });
+
+      if (matchingAlarm && !doNotDisturb) {
+        setDoNotDisturb(true);
+
+        const endTime = new Date(now.getTime() + 8 * 60 * 60 * 1000); 
+        setDndEndTime(endTime);
+      }
+
+      if (doNotDisturb && dndEndTime && now >= dndEndTime) {
+        setDoNotDisturb(false);
+        setDndEndTime(null);
+      }
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [alarms, doNotDisturb, dndEndTime]);
+
   const renderAlarm = ({ item }) => (
-    <View style={styles.components}>
-      <Text style={styles.alarmText}>
+    <View style={SleepAlarmStyles.components}>
+      <Text style={SleepAlarmStyles.alarmText}>
         {item.hour.toString().padStart(2, '0')}:
         {item.minute.toString().padStart(2, '0')} {item.period}
       </Text>
-      <View style={styles.alarmActions}>
+      <View style={SleepAlarmStyles.alarmActions}>
         <Switch
           value={item.active}
           onValueChange={() => toggleAlarm(item.id)}
@@ -108,202 +139,103 @@ export default function App() {
           thumbColor={Platform.OS === 'android' ? '#fff' : undefined}
         />
         <TouchableOpacity
-          style={styles.deleteButton}
+          style={SleepAlarmStyles.deleteButton}
           onPress={() =>
             Alert.alert('Delete Alarm', 'Are you sure you want to delete this alarm?', [
               { text: 'Cancel', style: 'cancel' },
               { text: 'Delete', style: 'destructive', onPress: () => deleteAlarm(item.id) },
             ])
           }>
-          <Text style={styles.deleteText}>🗑️</Text>
+          <Text style={SleepAlarmStyles.deleteText}>🗑️</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.card}>
-        <Text style={styles.header}>Enter time</Text>
+      <View style={SleepAlarmStyles.container}>
+        <Text style={SleepAlarmStyles.title}>Alarm Clock</Text>
+        <View style={SleepAlarmStyles.card}>
+          <Text style={SleepAlarmStyles.header}>Enter time</Text>
 
-        <View style={styles.timeContainer}>
-          <View style={styles.box}>
-            <Picker
-              selectedValue={selectedHour}
-              style={styles.innerPicker}
-              onValueChange={(itemValue) => setSelectedHour(itemValue)}>
-              {Array.from({ length: 12 }, (_, i) => i + 1).map((hour) => (
-                <Picker.Item key={hour} label={hour.toString()} value={hour} />
-              ))}
-            </Picker>
+          <View style={SleepAlarmStyles.timeContainer}>
+            <View style={SleepAlarmStyles.box}>
+              <Picker
+                selectedValue={selectedHour}
+                style={SleepAlarmStyles.innerPicker}
+                onValueChange={(itemValue) => setSelectedHour(itemValue)}>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((hour) => (
+                  <Picker.Item key={hour} label={hour.toString()} value={hour} />
+                ))}
+              </Picker>
+            </View>
+
+            <Text style={SleepAlarmStyles.colon}>:</Text>
+
+            <View style={SleepAlarmStyles.box}>
+              <Picker
+                selectedValue={selectedMinute}
+                style={SleepAlarmStyles.innerPicker}
+                onValueChange={(itemValue) => setSelectedMinute(itemValue)}>
+                {Array.from({ length: 60 }, (_, i) => (
+                  <Picker.Item key={i} label={i.toString().padStart(2, '0')} value={i} />
+                ))}
+              </Picker>
+            </View>
+
+            <View style={SleepAlarmStyles.periodContainer}>
+              <TouchableOpacity
+                style={[
+                  SleepAlarmStyles.periodButton,
+                  selectedPeriod === 'AM' && SleepAlarmStyles.periodActive,
+                ]}
+                onPress={() => setSelectedPeriod('AM')}>
+                <Text style={SleepAlarmStyles.periodText}>AM</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  SleepAlarmStyles.periodButton,
+                  selectedPeriod === 'PM' && SleepAlarmStyles.periodActive,
+                ]}
+                onPress={() => setSelectedPeriod('PM')}>
+                <Text style={SleepAlarmStyles.periodText}>PM</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
-          <Text style={styles.colon}>:</Text>
+          <Text style={SleepAlarmStyles.liveTimeText}>
+            {selectedHour.toString().padStart(2, '0')}:
+            {selectedMinute.toString().padStart(2, '0')} {selectedPeriod}
+          </Text>
 
-          <View style={styles.box}>
-            <Picker
-              selectedValue={selectedMinute}
-              style={styles.innerPicker}
-              onValueChange={(itemValue) => setSelectedMinute(itemValue)}>
-              {Array.from({ length: 60 }, (_, i) => (
-                <Picker.Item key={i} label={i.toString().padStart(2, '0')} value={i} />
-              ))}
-            </Picker>
-          </View>
-
-          <View style={styles.periodContainer}>
-            <TouchableOpacity
-              style={[
-                styles.periodButton,
-                selectedPeriod === 'AM' && styles.periodActive,
-              ]}
-              onPress={() => setSelectedPeriod('AM')}>
-              <Text style={styles.periodText}>AM</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.periodButton,
-                selectedPeriod === 'PM' && styles.periodActive,
-              ]}
-              onPress={() => setSelectedPeriod('PM')}>
-              <Text style={styles.periodText}>PM</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity style={SleepAlarmStyles.setButton} onPress={addAlarm}>
+            <Text style={SleepAlarmStyles.setButtonText}>Set Alarm</Text>
+          </TouchableOpacity>
         </View>
 
-        <Text style={styles.liveTimeText}>
-          {selectedHour.toString().padStart(2, '0')}:
-          {selectedMinute.toString().padStart(2, '0')} {selectedPeriod}
-        </Text>
+        <View
+          style={[
+            SleepAlarmStyles.dndContainer,
+            { backgroundColor: doNotDisturb ? '#b9e4c2' : '#f8caca' },
+          ]}>
+          <Text style={SleepAlarmStyles.dndText}>
+            Do Not Disturb is {doNotDisturb ? 'Turned ON' : 'Turned OFF'}
+          </Text>
+        </View>
 
-        <TouchableOpacity style={styles.setButton} onPress={addAlarm}>
-          <Text style={styles.setButtonText}>Set Alarm</Text>
-        </TouchableOpacity>
+        <Text style={SleepAlarmStyles.subTitle}>Your Alarms</Text>
+
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <View style={SleepAlarmStyles.alarmListContainer}>
+          <FlatList
+            data={alarms}
+            keyExtractor={(item) => item.id}
+            renderItem={renderAlarm}
+            ListEmptyComponent={<Text style={SleepAlarmStyles.empty}>No alarms set</Text>}
+          />
+        </View>
+         </ScrollView>
       </View>
-
-      <Text style={styles.subTitle}>Your Alarms</Text>
-      <FlatList
-        data={alarms}
-        keyExtractor={(item) => item.id}
-        renderItem={renderAlarm}
-        ListEmptyComponent={<Text style={styles.empty}>No alarms set</Text>}
-      />
-    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f9fff9',
-    padding: 20,
-  },
-  // title: {
-  //   fontSize: 26,
-  //   fontWeight: 'bold',
-  //   textAlign: 'center',
-  //   color: '#2f6b50',
-  //   marginBottom: 10,
-  // },
-  card: {
-    backgroundColor: '#b8e0b0',
-    borderRadius: 20,
-    padding: 20,
-    alignItems: 'center',
-  },
-  header: {
-    fontSize: 18,
-    color: '#2f6b50',
-    marginBottom: 10,
-  },
-  timeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  box: {
-    backgroundColor: '#a9d8a0',
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
-  innerPicker: {
-    height: 150,
-    width: 80,
-    color: '#2f6b50',
-  },
-  colon: {
-    fontSize: 28,
-    color: '#2f6b50',
-    marginHorizontal: 5,
-  },
-  periodContainer: {
-    flexDirection: 'column',
-    marginLeft: 10,
-  },
-  periodButton: {
-    backgroundColor: '#a9d8a0',
-    borderRadius: 8,
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    marginVertical: 2,
-  },
-  periodActive: {
-    backgroundColor: '#77b86c',
-  },
-  periodText: {
-    fontSize: 16,
-    color: '#2f6b50',
-    fontWeight: '600',
-  },
-  liveTimeText: {
-    textAlign: 'center',
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#2f6b50',
-    marginTop: 10,
-  },
-  setButton: {
-    backgroundColor: '#77b86c',
-    paddingVertical: 10,
-    paddingHorizontal: 40,
-    borderRadius: 10,
-    marginTop: 15,
-  },
-  setButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  subTitle: {
-    fontSize: 20,
-    marginVertical: 12,
-    color: '#2f6b50',
-  },
-  components: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
-  },
-  alarmText: {
-    fontSize: 20,
-    color: '#111',
-  },
-  alarmActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  deleteButton: {
-    marginLeft: 10,
-    padding: 6,
-  },
-  deleteText: {
-    fontSize: 20,
-    color: 'red',
-  },
-  empty: {
-    color: '#666',
-  },
-});
