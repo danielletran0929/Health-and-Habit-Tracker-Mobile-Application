@@ -1,36 +1,31 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet } from 'react-native';
 
-const { width, height } = Dimensions.get('window');
-const scaleFont = (size) => Math.round(size * (width / 375));
-const scaleHeight = (size) => Math.round(size * (height / 667));
-
-export default StyleSheet.create({
+export default  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f9fff9',
-    paddingHorizontal: width * 0.05,
-    paddingVertical: height * 0.02,
+    padding: 20,
   },
   title: {
     backgroundColor: '#b8e0b0',
-    padding: height * 0.025,
+    padding: 20,
     textAlign: 'center',
-    fontSize: scaleFont(18),
+    fontSize: 18,
     color: '#2f6b50',
-    marginBottom: height * 0.007,
+    marginBottom: 5,
     fontWeight: '600',
   },
   card: {
     backgroundColor: '#b8e0b0',
     borderRadius: 20,
-    padding: height * 0.025,
+    padding: 20,
     alignItems: 'center',
-    marginTop: height * 0.015,
+    marginTop: 10,
   },
   header: {
-    fontSize: scaleFont(18),
+    fontSize: 18,
     color: '#2f6b50',
-    marginBottom: height * 0.012,
+    marginBottom: 10,
   },
   timeContainer: {
     flexDirection: 'row',
@@ -43,84 +38,84 @@ export default StyleSheet.create({
     overflow: 'hidden',
   },
   innerPicker: {
-    height: height * 0.22,
-    width: width * 0.2,
+    height: 220,
+    width: 100,
     color: '#2f6b50',
   },
   colon: {
-    fontSize: scaleFont(28),
+    fontSize: 28,
     color: '#2f6b50',
-    marginHorizontal: width * 0.013,
+    marginHorizontal: 5,
   },
   dndContainer: {
-    padding: height * 0.015,
+    padding: 10,
     borderRadius: 5,
-    marginBottom: height * 0.012,
+    marginBottom: 10,
     alignItems: 'center',
-    marginTop: height * 0.015,
+    marginTop: 5,
   },
   dndText: {
-    fontSize: scaleFont(16),
+    fontSize: 16,
     fontWeight: '600',
     color: '#000',
   },
   periodContainer: {
     flexDirection: 'column',
-    marginLeft: width * 0.025,
+    marginLeft: 10,
   },
   periodButton: {
     backgroundColor: '#a9d8a0',
     borderRadius: 8,
-    paddingVertical: height * 0.008,
-    paddingHorizontal: width * 0.035,
-    marginVertical: height * 0.003,
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    marginVertical: 2,
   },
   periodActive: {
     backgroundColor: '#77b86c',
   },
   periodText: {
-    fontSize: scaleFont(16),
+    fontSize: 16,
     color: '#2f6b50',
     fontWeight: '600',
   },
   liveTimeText: {
     textAlign: 'center',
-    fontSize: scaleFont(20),
+    fontSize: 20,
     fontWeight: '600',
     color: '#2f6b50',
-    marginTop: height * 0.012,
+    marginTop: 10,
   },
   setButton: {
     backgroundColor: '#77b86c',
-    paddingVertical: height * 0.015,
-    paddingHorizontal: width * 0.11,
+    paddingVertical: 10,
+    paddingHorizontal: 40,
     borderRadius: 10,
-    marginTop: height * 0.02,
+    marginTop: 15,
   },
   setButtonText: {
     color: '#fff',
-    fontSize: scaleFont(18),
+    fontSize: 18,
     fontWeight: '600',
   },
   subTitle: {
-    fontSize: scaleFont(20),
-    marginVertical: height * 0.018,
+    fontSize: 20,
+    marginVertical: 12,
     color: '#2f6b50',
   },
   alarmListContainer: {
     flex: 1,
-    maxHeight: height * 0.6,
+    maxHeight: 400,
   },
   components: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: height * 0.015,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderColor: '#ccc',
   },
   alarmText: {
-    fontSize: scaleFont(20),
+    fontSize: 20,
     color: '#111',
   },
   alarmActions: {
@@ -128,20 +123,23 @@ export default StyleSheet.create({
     alignItems: 'center',
   },
   deleteButton: {
-    marginLeft: width * 0.025,
-    padding: height * 0.008,
+    marginLeft: 10,
+    padding: 6,
   },
   deleteText: {
-    fontSize: scaleFont(20),
+    fontSize: 20,
     color: 'red',
   },
   empty: {
     color: '#666',
   },
+
   dndOn: {
-    backgroundColor: '#b9e4c2',
-  },
-  dndOff: {
-    backgroundColor: '#f8caca',
-  },
+  backgroundColor: '#b9e4c2',
+},
+dndOff: {
+  backgroundColor: '#f8caca',
+},
+
 });
+
