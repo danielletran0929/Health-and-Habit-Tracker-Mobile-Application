@@ -1,121 +1,132 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 
-export default  StyleSheet.create({
+const { width, height } = Dimensions.get('window');
+const scaleFont = (size) => Math.round(size * (width / 375));
+const scaleHeight = (size) => Math.round(size * (height / 667));
+
+export default StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f9fff9',
-    padding: 20,
+    paddingHorizontal: width * 0.05,
+    paddingVertical: height * 0.02,
   },
   title: {
     backgroundColor: '#b8e0b0',
-    padding: 20,
+    padding: height * 0.025,
     textAlign: 'center',
-    fontSize: 18,
+    fontSize: scaleFont(18),
     color: '#2f6b50',
-    marginBottom: 5,
+    marginBottom: height * 0.007,
     fontWeight: '600',
   },
   card: {
     backgroundColor: '#b8e0b0',
     borderRadius: 20,
-    padding: 20,
+    padding: height * 0.025,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: height * 0.015,
   },
   header: {
-    fontSize: 18,
+    fontSize: scaleFont(18),
     color: '#2f6b50',
-    marginBottom: 10,
+    marginBottom: height * 0.012,
   },
-  timeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  box: {
-    backgroundColor: '#a9d8a0',
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
+timeContainer: {
+  flexDirection: 'row',
+  alignItems: 'stretch',
+  justifyContent: 'center',
+},
+
+box: {
+  backgroundColor: '#a9d8a0',
+  borderRadius: 10,
+  justifyContent: 'center',
+  alignItems: 'center',
+  width: width * 0.2,       
+  height: height * 0.08,   
+  marginHorizontal: width * 0.01,
+  overflow: 'hidden',     
+},
+
   innerPicker: {
-    height: 220,
-    width: 100,
-    color: '#2f6b50',
+    width: '100%',
+    height: '100%',
   },
   colon: {
-    fontSize: 28,
+    fontSize: scaleFont(28),
     color: '#2f6b50',
-    marginHorizontal: 5,
+    marginHorizontal: width * 0.013,
   },
   dndContainer: {
-    padding: 10,
+    padding: height * 0.015,
     borderRadius: 5,
-    marginBottom: 10,
+    marginBottom: height * 0.012,
     alignItems: 'center',
-    marginTop: 5,
+    marginTop: height * 0.015,
   },
   dndText: {
-    fontSize: 16,
+    fontSize: scaleFont(16),
     fontWeight: '600',
     color: '#000',
   },
   periodContainer: {
     flexDirection: 'column',
-    marginLeft: 10,
+    marginLeft: width * 0.025,
   },
   periodButton: {
     backgroundColor: '#a9d8a0',
     borderRadius: 8,
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    marginVertical: 2,
+    paddingVertical: height * 0.008,
+    paddingHorizontal: width * 0.035,
+    marginVertical: height * 0.003,
   },
   periodActive: {
     backgroundColor: '#77b86c',
   },
   periodText: {
-    fontSize: 16,
+    fontSize: scaleFont(16),
     color: '#2f6b50',
     fontWeight: '600',
   },
   liveTimeText: {
     textAlign: 'center',
-    fontSize: 20,
+    fontSize: scaleFont(20),
     fontWeight: '600',
     color: '#2f6b50',
-    marginTop: 10,
+    marginTop: height * 0.012,
   },
   setButton: {
     backgroundColor: '#77b86c',
-    paddingVertical: 10,
-    paddingHorizontal: 40,
+    paddingVertical: height * 0.015,
+    paddingHorizontal: width * 0.11,
     borderRadius: 10,
-    marginTop: 15,
+    marginTop: height * 0.02,
   },
   setButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: scaleFont(18),
     fontWeight: '600',
   },
   subTitle: {
-    fontSize: 20,
-    marginVertical: 12,
+    fontSize: scaleFont(20),
+    marginVertical: height * 0.018,
     color: '#2f6b50',
   },
   alarmListContainer: {
     flex: 1,
-    maxHeight: 400,
+    maxHeight: height * 0.6,
   },
   components: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: height * 0.015,
     borderBottomWidth: 1,
     borderColor: '#ccc',
   },
   alarmText: {
-    fontSize: 20,
+    fontSize: scaleFont(20),
     color: '#111',
   },
   alarmActions: {
@@ -123,23 +134,20 @@ export default  StyleSheet.create({
     alignItems: 'center',
   },
   deleteButton: {
-    marginLeft: 10,
-    padding: 6,
+    marginLeft: width * 0.025,
+    padding: height * 0.008,
   },
   deleteText: {
-    fontSize: 20,
+    fontSize: scaleFont(20),
     color: 'red',
   },
   empty: {
     color: '#666',
   },
-
   dndOn: {
-  backgroundColor: '#b9e4c2',
-},
-dndOff: {
-  backgroundColor: '#f8caca',
-},
-
+    backgroundColor: '#b9e4c2',
+  },
+  dndOff: {
+    backgroundColor: '#f8caca',
+  },
 });
-
