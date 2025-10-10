@@ -1,4 +1,7 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
+const scaleFont = (size) => Math.round(size * (width / 375));
 
 export default StyleSheet.create({
   safeArea: {
@@ -10,43 +13,45 @@ export default StyleSheet.create({
   container: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 25,
+    padding: width * 0.06,
     width: '85%',
     elevation: 3,
   },
   title: {
-    fontSize: 22,
+    fontSize: scaleFont(22),
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: height * 0.025,
   },
   input: {
     backgroundColor: '#f1f1f1',
     borderRadius: 8,
-    padding: 10,
-    marginBottom: 10,
-    fontSize: 14,
+    padding: height * 0.015,
+    marginBottom: height * 0.012,
+    fontSize: scaleFont(14),
   },
   button: {
     backgroundColor: '#4CAF50',
     borderRadius: 8,
-    paddingVertical: 10,
+    paddingVertical: height * 0.015,
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: height * 0.012,
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: scaleFont(16),
   },
   backText: {
     color: '#007AFF',
     textAlign: 'center',
-    marginTop: 10,
-    fontSize: 14,
+    marginTop: height * 0.015,
+    fontSize: scaleFont(14),
   },
   linkText: {
     color: '#007AFF',
     textAlign: 'center',
-    marginTop: 10,
+    marginTop: height * 0.015,
+    fontSize: scaleFont(14),
   },
 });
