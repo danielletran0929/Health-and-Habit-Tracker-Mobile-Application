@@ -1,4 +1,9 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
+
+// Helper for scaling font sizes based on screen width
+const scaleFont = (size) => Math.round(size * (width / 375));
 
 export default StyleSheet.create({
   safeArea: {
@@ -10,23 +15,23 @@ export default StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: width * 0.05, // 5% of screen width
+    paddingVertical: height * 0.02, // 2% of screen height
   },
 
   appName: {
-    fontSize: 22,
+    fontSize: scaleFont(22),
     fontWeight: 'bold',
   },
 
   profileLink: {
-    fontSize: 16,
+    fontSize: scaleFont(16),
     color: '#000',
   },
 
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: width * 0.05,
+    paddingBottom: height * 0.03,
   },
 
   whiteSection: {
@@ -36,47 +41,25 @@ export default StyleSheet.create({
   box: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 15,
+    padding: width * 0.04, // scale padding to screen width
     elevation: 3,
-    marginBottom: 12,
+    marginBottom: height * 0.015,
   },
 
   sectionTitle: {
     fontWeight: 'bold',
-    fontSize: 16,
-    marginBottom: 5,
+    fontSize: scaleFont(16),
+    marginBottom: height * 0.008,
   },
 
   text: {
-    fontSize: 14,
+    fontSize: scaleFont(14),
   },
 
   link: {
-    fontSize: 14,
+    fontSize: scaleFont(14),
     color: '#007AFF',
-    marginTop: 4,
-  },
-
-  // Progress circles section
-  progressContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-
-  progressItem: {
-    alignItems: 'center',
-  },
-
-  progressCircle: {
-    height: 60,
-    width: 60,
-  },
-
-  progressLabel: {
-    fontSize: 13,
-    marginTop: 6,
+    marginTop: height * 0.004,
   },
 
   // Navbar
@@ -84,20 +67,26 @@ export default StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: height * 0.015,
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderColor: '#ccc',
   },
 
   navText: {
-    fontSize: 20,
+    fontSize: scaleFont(20),
   },
 
-    navTextActive: {
+  navTextActive: {
     color: '#2F6B50',
     fontWeight: '700',
     transform: [{ scale: 1.2 }],
   },
 
+  tipBox: {
+    backgroundColor: '#f0fdf4',
+    padding: width * 0.035,
+    borderRadius: 10,
+    marginVertical: height * 0.01,
+  },
 });
