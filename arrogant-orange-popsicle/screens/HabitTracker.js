@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   View,
   Text,
@@ -6,21 +6,30 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
+  Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AuthContext } from '../App'; // adjust this path if needed
+
+const { width, height } = Dimensions.get('window');
+const scaleFont = (size) => Math.round(size * (width / 375));
+
 
 const HabitTracker = () => {
+  const { user } = useContext(AuthContext);
+  const userKey = user ? `habits_${user.username}` : '@habits';
+
   const [habits, setHabits] = useState([]);
   const [newHabit, setNewHabit] = useState('');
 
   useEffect(() => {
     loadHabits();
-  }, []);
+  }, [user]);
 
   // ✅ Load habits from AsyncStorage
   const loadHabits = async () => {
     try {
-      const saved = await AsyncStorage.getItem('@habits');
+      const saved = await AsyncStorage.getItem(userKey);
       if (saved) setHabits(JSON.parse(saved));
     } catch (e) {
       console.log('Error loading habits:', e);
@@ -30,7 +39,7 @@ const HabitTracker = () => {
   // ✅ Save habits to AsyncStorage
   const saveHabits = async (updated) => {
     try {
-      await AsyncStorage.setItem('@habits', JSON.stringify(updated));
+      await AsyncStorage.setItem(userKey, JSON.stringify(updated));
     } catch (e) {
       console.log('Error saving habits:', e);
     }
@@ -133,78 +142,80 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f9fafb',
-    padding: 20,
+    padding: width * 0.05,
   },
   title: {
-    fontSize: 28,
+    fontSize: scaleFont(28),
     fontWeight: 'bold',
     textAlign: 'center',
-    marginVertical: 20,
+    marginVertical: height * 0.025,
   },
   inputContainer: {
     flexDirection: 'row',
-    marginBottom: 16,
-    gap: 8,
+    marginBottom: height * 0.02,
+    gap: width * 0.02,
   },
   input: {
     flex: 1,
     borderWidth: 1,
     borderColor: '#d1d5db',
     borderRadius: 10,
-    paddingHorizontal: 12,
-    fontSize: 16,
+    paddingHorizontal: width * 0.03,
+    fontSize: scaleFont(16),
     backgroundColor: '#fff',
   },
   addButton: {
     backgroundColor: '#2563EB',
-    paddingHorizontal: 16,
+    paddingHorizontal: width * 0.04,
     justifyContent: 'center',
     borderRadius: 10,
   },
   addText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: scaleFont(16),
   },
   habitRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: height * 0.015,
   },
   habitCard: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: 16,
+    padding: width * 0.04,
     borderRadius: 12,
-    marginRight: 10,
+    marginRight: width * 0.03,
     elevation: 2,
   },
   habitDone: {
     backgroundColor: '#dcfce7',
   },
   habitText: {
-    fontSize: 18,
+    fontSize: scaleFont(18),
     color: '#111827',
   },
   deleteText: {
-    fontSize: 20,
+    fontSize: scaleFont(20),
   },
   emptyText: {
     textAlign: 'center',
-    marginTop: 40,
+    marginTop: height * 0.05,
     color: '#6b7280',
-    fontSize: 16,
+    fontSize: scaleFont(16),
   },
   resetButton: {
     backgroundColor: '#1d4ed8',
-    padding: 14,
+    paddingVertical: height * 0.018,
     borderRadius: 12,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: height * 0.03,
   },
   resetText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: scaleFont(18),
     fontWeight: 'bold',
   },
 });
+
