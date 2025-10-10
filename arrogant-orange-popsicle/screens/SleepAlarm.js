@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
 import * as Notifications from 'expo-notifications';
 import SleepAlarmStyles from '../styles/SleepAlarmStyles';
+import { AuthContext } from '../App'; // adjust this to your context
 
 // ✅ Notification handler setup
 Notifications.setNotificationHandler({
@@ -25,6 +26,12 @@ Notifications.setNotificationHandler({
 });
 
 export default function SleepAlarmScreen() {
+  const { user } = useContext(AuthContext); // get logged-in user
+  const userKey = user ? `alarms_${user.username}` : 'alarms_guest';
+  const dndKey = user ? `dndState_${user.username}` : 'dnd_guest';
+  const sleepKey = user ? `sleepStart_${user.username}` : 'sleep_guest';
+  const sleepDurationKey = user ? `lastSleepDuration_${user.username}` : 'sleepDuration_guest';
+
   // ===== Alarms & DND =====
   const [alarms, setAlarms] = useState([]);
   const [hour, setHour] = useState(12);
@@ -46,13 +53,15 @@ export default function SleepAlarmScreen() {
   // ===== Load alarms, DND, and ongoing sleep =====
   useEffect(() => {
     (async () => {
+      if (!user) return;
+
       try {
-        // Alarms
-        const savedAlarms = await AsyncStorage.getItem('alarms');
+        // Load alarms
+        const savedAlarms = await AsyncStorage.getItem(userKey);
         if (savedAlarms) setAlarms(JSON.parse(savedAlarms));
 
-        // DND
-        const savedDnd = await AsyncStorage.getItem('dndState');
+        // Load DND
+        const savedDnd = await AsyncStorage.getItem(dndKey);
         if (savedDnd) {
           const { active, end } = JSON.parse(savedDnd);
           const now = new Date();
@@ -62,13 +71,12 @@ export default function SleepAlarmScreen() {
           }
         }
 
-        // Sleep
-        const start = await AsyncStorage.getItem('sleepStart');
+        // Load ongoing sleep
+        const start = await AsyncStorage.getItem(sleepKey);
         if (start) {
           setSleepStart(start);
           setIsSleeping(true);
 
-          // restore fallback timer
           const startTime = new Date(start);
           const now = new Date();
           const diff = 8 * 60 * 60 * 1000 - (now - startTime);
@@ -77,17 +85,16 @@ export default function SleepAlarmScreen() {
               await recordSleepDuration(8);
               Alert.alert('Sleep complete', '8 hours passed — good morning!');
               setIsSleeping(false);
-              await AsyncStorage.removeItem('sleepStart');
+              await AsyncStorage.removeItem(sleepKey);
             }, diff);
           } else {
-            // already past 8h
             await recordSleepDuration(8);
             setIsSleeping(false);
-            await AsyncStorage.removeItem('sleepStart');
+            await AsyncStorage.removeItem(sleepKey);
           }
         }
 
-        // Notifications
+        // Notifications permission
         const { status } = await Notifications.requestPermissionsAsync();
         if (status !== 'granted') {
           Alert.alert('Permission required', 'Enable notifications for alarms.');
@@ -96,32 +103,34 @@ export default function SleepAlarmScreen() {
         console.log('Error loading state:', e);
       }
     })();
-  }, []);
+  }, [user]);
 
-  // ===== Save alarms =====
+  // ===== Save alarms whenever they change =====
   useEffect(() => {
-    AsyncStorage.setItem('alarms', JSON.stringify(alarms));
+    if (!user) return;
+    AsyncStorage.setItem(userKey, JSON.stringify(alarms));
     updateNextAlarm();
-  }, [alarms]);
+  }, [alarms, user]);
 
   // ===== Record sleep =====
   const recordSleepDuration = async (hours) => {
-    await AsyncStorage.setItem('lastSleepDuration', hours.toString());
+    if (!user) return;
+    await AsyncStorage.setItem(sleepDurationKey, hours.toString());
   };
 
   // ===== Start sleep =====
   const handleStartSleep = async () => {
+    if (!user) return;
     const startTime = new Date().toISOString();
-    await AsyncStorage.setItem('sleepStart', startTime);
+    await AsyncStorage.setItem(sleepKey, startTime);
     setSleepStart(startTime);
     setIsSleeping(true);
 
-    // Start fallback timer
     fallbackTimerRef.current = setTimeout(async () => {
       await recordSleepDuration(8);
       Alert.alert('Sleep complete', '8 hours passed — good morning!');
       setIsSleeping(false);
-      await AsyncStorage.removeItem('sleepStart');
+      await AsyncStorage.removeItem(sleepKey);
     }, 8 * 60 * 60 * 1000);
   };
 
@@ -131,20 +140,16 @@ export default function SleepAlarmScreen() {
       Alert.alert('No sleep session found');
       return;
     }
-
-    if (fallbackTimerRef.current) {
-      clearTimeout(fallbackTimerRef.current);
-    }
+    if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
 
     const start = new Date(sleepStart);
     const now = new Date();
     const duration = ((now - start) / 36e5).toFixed(1); // hours
-
     await recordSleepDuration(duration);
     Alert.alert('Good morning!', `You slept for ${duration} hours.`);
 
     setIsSleeping(false);
-    await AsyncStorage.removeItem('sleepStart');
+    await AsyncStorage.removeItem(sleepKey);
   };
 
   // ===== Schedule / Cancel alarms =====
@@ -207,13 +212,12 @@ export default function SleepAlarmScreen() {
           setDnd(true);
           const end = new Date(Date.now() + 8 * 60 * 60 * 1000);
           setDndEnd(end);
-          await AsyncStorage.setItem('dndState', JSON.stringify({ active: true, end }));
+          if (user) await AsyncStorage.setItem(dndKey, JSON.stringify({ active: true, end }));
         }
       }
     });
-
     return () => sub.remove();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (!dnd || !dndEnd) return;
@@ -222,11 +226,11 @@ export default function SleepAlarmScreen() {
       if (now >= dndEnd) {
         setDnd(false);
         setDndEnd(null);
-        await AsyncStorage.removeItem('dndState');
+        if (user) await AsyncStorage.removeItem(dndKey);
       }
     }, 60000);
     return () => clearInterval(timer);
-  }, [dnd, dndEnd]);
+  }, [dnd, dndEnd, user]);
 
   // ===== Next alarm & countdown =====
   const updateNextAlarm = () => {
@@ -316,7 +320,6 @@ export default function SleepAlarmScreen() {
         {/* ===== Time Picker Section ===== */}
         <View style={SleepAlarmStyles.card}>
           <Text style={SleepAlarmStyles.header}>Set Alarm</Text>
-
           <View style={SleepAlarmStyles.timeContainer}>
             <View style={SleepAlarmStyles.box}>
               <Picker selectedValue={hour} onValueChange={setHour} style={SleepAlarmStyles.innerPicker}>
@@ -325,9 +328,7 @@ export default function SleepAlarmScreen() {
                 ))}
               </Picker>
             </View>
-
             <Text style={SleepAlarmStyles.colon}>:</Text>
-
             <View style={SleepAlarmStyles.box}>
               <Picker selectedValue={minute} onValueChange={setMinute} style={SleepAlarmStyles.innerPicker}>
                 {Array.from({ length: 60 }, (_, i) => (
@@ -335,7 +336,6 @@ export default function SleepAlarmScreen() {
                 ))}
               </Picker>
             </View>
-
             <View style={SleepAlarmStyles.periodContainer}>
               {['AM', 'PM'].map((p) => (
                 <TouchableOpacity
@@ -347,11 +347,9 @@ export default function SleepAlarmScreen() {
               ))}
             </View>
           </View>
-
           <Text style={SleepAlarmStyles.liveTimeText}>
             {hour.toString().padStart(2, '0')}:{minute.toString().padStart(2, '0')} {period}
           </Text>
-
           <TouchableOpacity style={SleepAlarmStyles.setButton} onPress={addAlarm}>
             <Text style={SleepAlarmStyles.setButtonText}>Set Alarm</Text>
           </TouchableOpacity>
